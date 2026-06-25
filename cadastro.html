@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VENDA⁺ — Cadastro</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #060E18;
+    --bg2:       #0A1624;
+    --bg3:       #0E1E30;
+    --gold:      #C4974A;
+    --gold2:     #D4AA62;
+    --text:      #EEF0F2;
+    --text2:     #7A8FA3;
+    --border:    rgba(196,151,74,0.18);
+    --border2:   rgba(196,151,74,0.35);
+    --negocio:   #C4A265;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* LIGHT SPOT */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(196,151,74,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    padding: 32px 40px 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--text);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: flex-start;
+    gap: 1px;
+  }
+
+  .brand sup {
+    font-size: 10px;
+    color: var(--gold);
+    margin-top: 3px;
+  }
+
+  .brand-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--border2);
+    margin: 0 14px;
+  }
+
+  .brand-produto {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 22px;
+    color: var(--negocio);
+    letter-spacing: 0.08em;
+  }
+
+  /* MAIN */
+  main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  /* HERO */
+  .hero {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 38px;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 14px;
+    letter-spacing: 0.01em;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--negocio);
+  }
+
+  .hero p {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  /* TRIAL BADGE */
+  .trial-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(196,162,101,0.08);
+    border: 1px solid rgba(196,162,101,0.25);
+    border-radius: 40px;
+    padding: 8px 18px;
+    margin: 20px auto 0;
+  }
+
+  .trial-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--negocio);
+    box-shadow: 0 0 8px var(--negocio);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; }
+    50% { opacity:0.4; }
+  }
+
+  .trial-text {
+    font-size: 12px;
+    color: var(--negocio);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  /* FORM CARD */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.4;
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 8px;
+    font-weight: 400;
+  }
+
+  .field input,
+  .field select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 13px 16px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A8FA3' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  .field input:focus,
+  .field select:focus {
+    border-color: var(--border2);
+  }
+
+  .field input::placeholder { color: var(--text2); opacity: 0.5; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  /* PLANO INFO */
+  .plano-info {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+
+  .plano-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .plano-nome {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--negocio);
+    letter-spacing: 0.04em;
+  }
+
+  .plano-dias {
+    font-size: 11px;
+    color: var(--text2);
+    background: rgba(196,162,101,0.08);
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .plano-items {
+    display: flex;
+    gap: 20px;
+  }
+
+  .plano-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .plano-item-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .plano-item-label {
+    font-size: 10px;
+    color: var(--text2);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* BTN */
+  .btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--gold), var(--negocio));
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--bg);
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .btn:hover { opacity: 0.9; }
+  .btn:active { transform: scale(0.99); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  /* TERMOS */
+  .termos {
+    font-size: 11px;
+    color: var(--text2);
+    text-align: center;
+    margin-top: 16px;
+    line-height: 1.6;
+  }
+
+  /* SUCCESS STATE */
+  .success {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  .success-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba(196,162,101,0.1);
+    border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 24px;
+  }
+
+  .success h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .success p {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  .success .credenciais {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 20px 0;
+    text-align: left;
+  }
+
+  .success .cred-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .success .cred-row:last-child { border-bottom: none; }
+  .success .cred-label { color: var(--text2); }
+  .success .cred-val { color: var(--negocio); font-weight: 500; font-family: monospace; }
+
+  /* ERROR */
+  .error-msg {
+    background: rgba(220,50,50,0.08);
+    border: 1px solid rgba(220,50,50,0.25);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #ff6b6b;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 24px 40px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-hier {
+    font-size: 11px;
+    color: var(--text2);
+    letter-spacing: 0.5px;
+  }
+
+  .footer-hier a {
+    color: var(--text2);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-hier a:hover { color: var(--gold); }
+
+  .footer-sep { color: var(--border2); margin: 0 6px; }
+
+  @media (max-width: 520px) {
+    header { padding: 24px 20px 0; }
+    .card { padding: 28px 20px; }
+    .field-row { grid-template-columns: 1fr; }
+    main { padding: 32px 16px; }
+    footer { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="brand">EU<sup>⁺</sup></div>
+    <div class="brand-sep"></div>
+    <div class="brand-produto">VENDA⁺</div>
+  </header>
+
+  <main>
+    <div class="container">
+
+      <div class="hero">
+        <div class="hero-eyebrow">Gestão de Pré-Pedidos</div>
+        <h1>Suas marcas, seus clientes,<br><em>tudo no celular.</em></h1>
+        <p>Cadastre-se e comece a gerenciar pré-pedidos<br>sem papel, sem planilha, sem complicação.</p>
+        <div class="trial-badge">
+          <div class="trial-dot"></div>
+          <span class="trial-text">7 dias Premium grátis — sem cartão</span>
+        </div>
+      </div>
+
+      <div class="card">
+
+        <div id="error-msg" class="error-msg"></div>
+
+        <div id="form-area">
+          <div class="plano-info">
+            <div class="plano-header">
+              <span class="plano-nome">Trial Premium</span>
+              <span class="plano-dias">7 dias grátis</span>
+            </div>
+            <div class="plano-items">
+              <div class="plano-item">
+                <span class="plano-item-val">10</span>
+                <span class="plano-item-label">Marcas</span>
+              </div>
+              <div class="plano-item">
+                <span class="plano-item-val">500</span>
+                <span class="plano-item-label">Produtos</span>
+              </div>
+              <div class="plano-item">
+                <span class="plano-item-val">∞</span>
+                <span class="plano-item-label">Clientes</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Nome completo</label>
+            <input type="text" id="nome" placeholder="Seu nome completo" autocomplete="name"/>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>WhatsApp</label>
+              <input type="tel" id="whatsapp" placeholder="(27) 99999-9999"/>
+            </div>
+            <div class="field">
+              <label>E-mail</label>
+              <input type="email" id="email" placeholder="seu@email.com"/>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Ramo de atuação</label>
+            <select id="ramo">
+              <option value="" disabled selected>Selecione seu ramo</option>
+              <option>Alimentício</option>
+              <option>Calçados e Vestuário</option>
+              <option>Cosméticos e Higiene</option>
+              <option>Eletrodomésticos</option>
+              <option>Ferragens e Materiais de Construção</option>
+              <option>Limpeza e Descartáveis</option>
+              <option>Móveis e Decoração</option>
+              <option>Papelaria e Escritório</option>
+              <option>Utilidades Domésticas</option>
+              <option>Outro</option>
+            </select>
+          </div>
+
+          <div class="divider"></div>
+
+          <button class="btn" id="btn-cadastrar" onclick="cadastrar()">
+            Criar minha conta grátis
+          </button>
+
+          <div class="termos">
+            Ao se cadastrar você concorda com os termos de uso.<br>
+            Após 7 dias, seu acesso passa automaticamente para o plano Free.
+          </div>
+        </div>
+
+        <div class="success" id="success-area">
+          <div class="success-icon">✓</div>
+          <h2>Cadastro realizado.</h2>
+          <p>Suas credenciais de acesso foram enviadas<br>por WhatsApp e e-mail.</p>
+          <div class="credenciais" id="credenciais-box"></div>
+          <a href="https://eumaisempresa.github.io/vendamais/adm/" style="text-decoration:none">
+            <button class="btn" style="margin-top:4px">Acessar meu painel →</button>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-hier">
+      <a href="https://www.eumaisempresa.com.br">Grupo EU⁺</a>
+      <span class="footer-sep">›</span>
+      <a href="#">EU⁺ Empresa</a>
+      <span class="footer-sep">›</span>
+      <a href="#">EU⁺ Negócio</a>
+      <span class="footer-sep">›</span>
+      <span style="color:var(--gold)">VENDA⁺</span>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  // ======== CONFIG ========
+  const SCRIPT_URL = 'SUA_URL_DO_APPS_SCRIPT_AQUI';
+
+  // ======== MÁSCARA WHATSAPP ========
+  document.getElementById('whatsapp').addEventListener('input', function(e) {
+    let v = e.target.value.replace(/\D/g,'');
+    if (v.length > 11) v = v.slice(0,11);
+    if (v.length >= 7) v = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+    else if (v.length >= 3) v = `(${v.slice(0,2)}) ${v.slice(2)}`;
+    else if (v.length >= 1) v = `(${v}`;
+    e.target.value = v;
+  });
+
+  // ======== VALIDAÇÃO ========
+  function validar() {
+    const nome = document.getElementById('nome').value.trim();
+    const whatsapp = document.getElementById('whatsapp').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const ramo = document.getElementById('ramo').value;
+    if (!nome) return 'Informe seu nome completo.';
+    if (whatsapp.replace(/\D/g,'').length < 10) return 'Informe um WhatsApp válido.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Informe um e-mail válido.';
+    if (!ramo) return 'Selecione seu ramo de atuação.';
+    return null;
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function hideError() {
+    document.getElementById('error-msg').style.display = 'none';
+  }
+
+  // ======== CADASTRAR ========
+  async function cadastrar() {
+    hideError();
+    const erro = validar();
+    if (erro) { showError(erro); return; }
+
+    const btn = document.getElementById('btn-cadastrar');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="btn-loading"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Criando conta...</span>';
+
+    const dados = {
+      acao: 'cadastrar',
+      nome: document.getElementById('nome').value.trim(),
+      whatsapp: document.getElementById('whatsapp').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      ramo: document.getElementById('ramo').value,
+    };
+
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(dados),
+      });
+      const data = await res.json();
+
+      if (data.sucesso) {
+        document.getElementById('form-area').style.display = 'none';
+        const s = document.getElementById('success-area');
+        s.style.display = 'block';
+        document.getElementById('credenciais-box').innerHTML = `
+          <div class="cred-row"><span class="cred-label">Usuário</span><span class="cred-val">${data.usuario}</span></div>
+          <div class="cred-row"><span class="cred-label">Senha</span><span class="cred-val">${data.senha}</span></div>
+          <div class="cred-row"><span class="cred-label">Plano</span><span class="cred-val">Premium — Trial 7 dias</span></div>
+        `;
+      } else {
+        showError(data.erro || 'Erro ao criar conta. Tente novamente.');
+        btn.disabled = false;
+        btn.textContent = 'Criar minha conta grátis';
+      }
+    } catch(e) {
+      showError('Erro de conexão. Verifique sua internet e tente novamente.');
+      btn.disabled = false;
+      btn.textContent = 'Criar minha conta grátis';
+    }
+  }
+</script>
+<style>
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>
+</body>
+</html>

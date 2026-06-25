@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VENDA⁺ — Gestor</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #060E18;
+    --bg2:     #0A1624;
+    --bg3:     #0E1E30;
+    --gold:    #C4974A;
+    --gold2:   #D4AA62;
+    --text:    #EEF0F2;
+    --text2:   #7A8FA3;
+    --border:  rgba(196,151,74,0.18);
+    --border2: rgba(196,151,74,0.35);
+    --neg:     #C4A265;
+    --green:   #4CAF7D;
+    --red:     #E05555;
+    --orange:  #E8720C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+  /* LOGIN */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.5;
+  }
+
+  .login-brand {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .login-brand .eu {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+
+  .login-brand .eu sup { font-size: 12px; color: var(--gold); }
+
+  .login-brand .produto {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--neg);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .login-brand .acesso {
+    font-size: 11px;
+    color: var(--text2);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); margin-bottom: 7px; }
+  .field input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 14px; color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s; }
+  .field input:focus { border-color: var(--border2); }
+  .field input::placeholder { color: var(--text2); opacity: 0.4; }
+
+  .btn-login { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--gold), var(--neg)); border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: var(--bg); cursor: pointer; margin-top: 8px; transition: opacity 0.2s; letter-spacing: 0.3px; }
+  .btn-login:hover { opacity: 0.88; }
+
+  .login-error { font-size: 12px; color: var(--red); text-align: center; margin-top: 12px; display: none; }
+
+  /* APP */
+  #app { display: none; }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 64px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    gap: 6px;
+    z-index: 100;
+  }
+
+  .sb-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 24px;
+    letter-spacing: 0.04em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+  }
+
+  .sb-logo sup { font-size: 8px; }
+
+  .sb-nav { width: 44px; height: 44px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 17px; transition: all 0.2s; position: relative; border: none; background: none; }
+  .sb-nav:hover, .sb-nav.active { background: rgba(196,151,74,0.1); color: var(--gold); }
+  .sb-nav.active::before { content: ''; position: absolute; left: -1px; width: 3px; height: 22px; background: var(--gold); border-radius: 0 3px 3px 0; }
+
+  .sb-tooltip { position: absolute; left: 54px; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); font-size: 11px; padding: 5px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 200; font-family: 'DM Sans', sans-serif; }
+  .sb-nav:hover .sb-tooltip { opacity: 1; }
+
+  .sb-logout { margin-top: auto; }
+
+  /* MAIN */
+  .main { margin-left: 64px; padding: 28px 32px; }
+
+  /* TOPBAR */
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .topbar h1 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; color: var(--text); letter-spacing: 0.04em; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.25; }
+  .stat-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; }
+  .stat-val { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 300; line-height: 1; color: var(--text); }
+  .stat-sub { font-size: 11px; color: var(--text2); margin-top: 5px; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 4px; margin-bottom: 20px; }
+  .tab { padding: 8px 18px; border-radius: 7px; font-size: 12px; cursor: pointer; color: var(--text2); transition: all 0.2s; border: none; background: none; font-family: 'DM Sans', sans-serif; letter-spacing: 0.3px; white-space: nowrap; }
+  .tab.active { background: rgba(196,151,74,0.1); color: var(--gold); border: 1px solid var(--border); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* SEARCH BAR */
+  .toolbar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
+  .search-input { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; }
+  .search-input:focus { border-color: var(--border2); }
+  .search-input::placeholder { color: var(--text2); opacity: 0.5; }
+
+  .btn-sm { padding: 9px 16px; border-radius: 8px; font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); transition: all 0.2s; white-space: nowrap; }
+  .btn-sm:hover { border-color: var(--border2); color: var(--text); }
+  .btn-sm.primary { background: linear-gradient(135deg, var(--gold), var(--neg)); border: none; color: var(--bg); font-weight: 500; }
+
+  /* TABLE */
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { padding: 12px 16px; text-align: left; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); font-weight: 400; border-bottom: 1px solid var(--border); background: var(--bg3); }
+  tbody td { padding: 14px 16px; font-size: 13px; color: var(--text); border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(196,151,74,0.03); }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 500; letter-spacing: 0.5px; }
+  .badge-trial  { background: rgba(196,162,101,0.12); color: var(--neg); border: 1px solid rgba(196,162,101,0.25); }
+  .badge-free   { background: rgba(122,143,163,0.1); color: var(--text2); border: 1px solid rgba(122,143,163,0.2); }
+  .badge-basico { background: rgba(76,175,125,0.1); color: var(--green); border: 1px solid rgba(76,175,125,0.2); }
+  .badge-premium{ background: rgba(196,151,74,0.12); color: var(--gold); border: 1px solid rgba(196,151,74,0.3); }
+  .badge-ativo  { background: rgba(76,175,125,0.1); color: var(--green); }
+  .badge-inativo{ background: rgba(224,85,85,0.1); color: var(--red); }
+  .badge-expira { background: rgba(232,114,12,0.1); color: var(--orange); }
+
+  /* ACTIONS */
+  .actions { display: flex; gap: 6px; }
+  .act-btn { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--text2); transition: all 0.2s; }
+  .act-btn:hover { border-color: var(--border2); color: var(--gold); }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(6,14,24,0.85); z-index: 500; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; position: relative; }
+  .modal::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.4; border-radius: 16px 16px 0 0; }
+  .modal-header { padding: 24px 28px 0; display: flex; justify-content: space-between; align-items: flex-start; }
+  .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; color: var(--text); }
+  .modal-sub { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .modal-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg3); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 16px; flex-shrink: 0; }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 20px 28px 28px; }
+
+  /* TEMPLATES WHATSAPP */
+  .template-list { display: flex; flex-direction: column; gap: 10px; }
+  .template-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all 0.2s; }
+  .template-item:hover { border-color: var(--border2); }
+  .template-tag { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--neg); margin-bottom: 5px; }
+  .template-preview { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .template-preview strong { color: var(--text); }
+
+  .wa-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background: #25D366; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: #fff; cursor: pointer; margin-top: 14px; transition: opacity 0.2s; text-decoration: none; }
+  .wa-btn:hover { opacity: 0.88; }
+
+  /* FINANCEIRO */
+  .fin-summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
+  .fin-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+  .fin-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; }
+  .fin-val { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: var(--text); line-height: 1; }
+  .fin-val.green { color: var(--green); }
+  .fin-sub { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+  /* PLANO SELECT */
+  .plano-select { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; width: 100%; margin-bottom: 10px; cursor: pointer; }
+  .plano-select:focus { border-color: var(--border2); }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 48px 20px; }
+  .empty-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.3; }
+  .empty p { font-size: 13px; color: var(--text2); }
+
+  /* FOOTER */
+  footer { margin-left: 64px; padding: 20px 32px; border-top: 1px solid var(--border); }
+  .footer-hier { font-size: 11px; color: var(--text2); }
+  .footer-hier a { color: var(--text2); text-decoration: none; }
+  .footer-hier a:hover { color: var(--gold); }
+  .footer-sep { color: var(--border2); margin: 0 6px; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+  @media (max-width: 900px) {
+    .stats { grid-template-columns: repeat(2,1fr); }
+    .fin-summary { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .main { padding: 16px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .sidebar { width: 52px; }
+    .main, footer { margin-left: 52px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="eu">EU<sup>⁺</sup></div>
+      <div class="produto">VENDA⁺</div>
+      <div class="acesso">Acesso Gestor</div>
+    </div>
+    <div class="field">
+      <label>Usuário</label>
+      <input type="text" id="login-user" placeholder="gestor" autocomplete="username"/>
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/>
+    </div>
+    <button class="btn-login" onclick="login()">Entrar</button>
+    <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sb-logo">V<sup>⁺</sup></div>
+    <button class="sb-nav active" onclick="showTab('representantes')">
+      👥<span class="sb-tooltip">Representantes</span>
+    </button>
+    <button class="sb-nav" onclick="showTab('comunicacao')">
+      💬<span class="sb-tooltip">Comunicação</span>
+    </button>
+    <button class="sb-nav" onclick="showTab('financeiro')">
+      💰<span class="sb-tooltip">Financeiro</span>
+    </button>
+    <button class="sb-nav sb-logout" onclick="logout()">
+      ↩<span class="sb-tooltip">Sair</span>
+    </button>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <h1 id="topbar-title">Representantes</h1>
+        <div style="font-size:12px;color:var(--text2);margin-top:3px" id="topbar-sub">Gerencie planos, acessos e comunicação</div>
+      </div>
+      <div class="topbar-right">
+        <div style="font-size:12px;color:var(--text2)">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-val" id="stat-total">—</div>
+        <div class="stat-sub">representantes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ativos</div>
+        <div class="stat-val" id="stat-ativos" style="color:var(--green)">—</div>
+        <div class="stat-sub">com plano pago</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Trial</div>
+        <div class="stat-val" id="stat-trial" style="color:var(--neg)">—</div>
+        <div class="stat-sub">em período de teste</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">MRR Estimado</div>
+        <div class="stat-val" id="stat-mrr" style="color:var(--gold)">—</div>
+        <div class="stat-sub">receita mensal recorrente</div>
+      </div>
+    </div>
+
+    <!-- PANEL: REPRESENTANTES -->
+    <div id="panel-representantes" class="panel active">
+      <div class="toolbar">
+        <input class="search-input" id="search-rep" placeholder="Buscar por nome, WhatsApp ou e-mail..." oninput="filtrarReps()"/>
+        <button class="btn-sm" onclick="carregarDados()">↻ Atualizar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>WhatsApp</th>
+              <th>Ramo</th>
+              <th>Plano</th>
+              <th>Expiração</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-reps">
+            <tr><td colspan="7"><div class="empty"><div class="empty-icon">⟳</div><p>Carregando dados...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PANEL: COMUNICAÇÃO -->
+    <div id="panel-comunicacao" class="panel">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:14px">Selecionar Destinatário</div>
+          <div class="toolbar" style="margin-bottom:14px">
+            <input class="search-input" id="search-dest" placeholder="Buscar representante..." oninput="filtrarDest()"/>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;max-height:420px;overflow-y:auto">
+            <div id="dest-list"></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:14px">Templates de Mensagem</div>
+          <div class="template-list" id="template-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL: FINANCEIRO -->
+    <div id="panel-financeiro" class="panel">
+      <div class="fin-summary">
+        <div class="fin-card">
+          <div class="fin-label">MRR</div>
+          <div class="fin-val green" id="fin-mrr">R$ 0</div>
+          <div class="fin-sub">receita mensal recorrente</div>
+        </div>
+        <div class="fin-card">
+          <div class="fin-label">Planos Ativos</div>
+          <div class="fin-val" id="fin-ativos">0</div>
+          <div class="fin-sub">básico + premium</div>
+        </div>
+        <div class="fin-card">
+          <div class="fin-label">Em Trial</div>
+          <div class="fin-val" id="fin-trial">0</div>
+          <div class="fin-sub">potencial de conversão</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Representante</th>
+              <th>Plano</th>
+              <th>Valor/mês</th>
+              <th>Vencimento</th>
+              <th>Status Pgto</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-fin"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <footer>
+    <div class="footer-hier">
+      <a href="https://www.eumaisempresa.com.br">Grupo EU⁺</a>
+      <span class="footer-sep">›</span>
+      <a href="#">EU⁺ Empresa</a>
+      <span class="footer-sep">›</span>
+      <a href="#">EU⁺ Negócio</a>
+      <span class="footer-sep">›</span>
+      <span style="color:var(--gold)">VENDA⁺ Gestor</span>
+    </div>
+  </footer>
+
+</div><!-- /app -->
+
+<!-- MODAL: PLANO -->
+<div class="modal-overlay" id="modal-plano">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Alterar Plano</div>
+        <div class="modal-sub" id="modal-plano-nome">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-plano')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:8px">Plano</div>
+      <select class="plano-select" id="select-plano">
+        <option value="free">Free — Grátis (1 marca / 10 produtos)</option>
+        <option value="basico">Básico — R$39,90/mês (5 marcas / 100 produtos)</option>
+        <option value="premium">Premium — R$99,90/mês (10 marcas / 500 produtos)</option>
+        <option value="personalizado">Personalizado — sob demanda</option>
+      </select>
+      <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:8px;margin-top:14px">Validade</div>
+      <input type="date" id="input-validade" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;margin-bottom:16px"/>
+      <button class="btn-sm primary" style="width:100%;padding:12px" onclick="salvarPlano()">Salvar alteração</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: WHATSAPP -->
+<div class="modal-overlay" id="modal-wa">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-wa-title">Enviar mensagem</div>
+        <div class="modal-sub" id="modal-wa-sub">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-wa')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:10px">Mensagem</div>
+      <textarea id="modal-wa-msg" rows="8" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;resize:vertical;line-height:1.6"></textarea>
+      <a id="modal-wa-link" href="#" target="_blank" class="wa-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Abrir no WhatsApp
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ======== CONFIG ========
+const SCRIPT_URL = 'SUA_URL_DO_APPS_SCRIPT_AQUI';
+const GESTOR_USER = 'gestor';
+const GESTOR_PASS = 'vendamais2026'; // TROCAR APÓS DEPLOY
+
+// ======== DADOS EM MEMÓRIA ========
+let REPS = [];
+let repAtual = null;
+
+// ======== TEMPLATES ========
+const TEMPLATES = [
+  {
+    tag: 'Trial Expirando (D-1)',
+    preview: 'Seu período de teste vence <strong>amanhã</strong>. Escolha seu plano para não perder o acesso.',
+    msg: (r) => `Olá ${r.nome}! 👋\n\nSeu período de teste do *VENDA⁺* vence amanhã.\n\nVocê já tem sua operação estruturada — não perca o acesso.\n\n✅ *Básico* — R$39,90/mês (5 marcas)\n⭐ *Premium* — R$99,90/mês (10 marcas)\n\nResponda aqui e eu ativo na hora.`
+  },
+  {
+    tag: 'Upgrade Free → Básico',
+    preview: 'No plano Free você está limitado a <strong>1 marca</strong>. Por R$39,90 expande para 5.',
+    msg: (r) => `Olá ${r.nome}!\n\nNo plano Free você está limitado a 1 marca e 10 produtos.\n\nPor apenas *R$39,90/mês* você vai para:\n• 5 marcas\n• 100 produtos\n• Pedidos ilimitados\n\nVale 1 cliente a mais para pagar o plano inteiro. 💡\n\nQuer ativar?`
+  },
+  {
+    tag: 'Upgrade Básico → Premium',
+    preview: 'Por R$60 a mais você <strong>dobra</strong> sua capacidade de marcas e produtos.',
+    msg: (r) => `Olá ${r.nome}!\n\nVocê está no Básico e já está crescendo. 🚀\n\nPor *R$99,90/mês* (diferença de R$60) você vai para:\n• 10 marcas\n• 500 produtos\n• Capacidade total\n\nQuanto vale dobrar sua operação?\n\nMe fala e eu ativo hoje.`
+  },
+  {
+    tag: 'Promoção Ativa',
+    preview: '<strong>Básico R$39,90</strong> (de R$59,90) · <strong>Premium R$99,90</strong> (de R$199,90)',
+    msg: (r) => `Olá ${r.nome}! 🎯\n\nPromoção especial *VENDA⁺*:\n\n• Básico: ~~R$59,90~~ por *R$39,90/mês*\n• Premium: ~~R$199,90~~ por *R$99,90/mês*\n\nPrimeiro mês com desconto, depois você decide.\n\nGarantir agora?`
+  },
+  {
+    tag: 'Reativação de Inativo',
+    preview: 'Faz um tempo que não nos falamos. Seu acesso ainda está aqui.',
+    msg: (r) => `Olá ${r.nome}, tudo bem?\n\nFaz um tempo que não nos falamos.\n\nSeu acesso ao *VENDA⁺* ainda está aqui — posso te ajudar com alguma coisa para você voltar a usar?\n\nEstou à disposição. 👊`
+  },
+  {
+    tag: 'Plano Personalizado',
+    preview: 'Para operações maiores. Setup incluso, configuramos juntos do zero.',
+    msg: (r) => `Olá ${r.nome}!\n\nVi que você tem uma operação que pode precisar de mais.\n\nO *Plano Personalizado VENDA⁺* foi feito para isso:\n• Mais de 10 marcas\n• Setup incluso (R$599,90 única vez)\n• Configuramos juntos do zero\n\nPosso te ligar hoje para entender melhor?`
+  },
+];
+
+// ======== LOGIN ========
+function login() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value.trim();
+  if (u === GESTOR_USER && p === GESTOR_PASS) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    carregarDados();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function logout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-pass').value = '';
+}
+
+// ======== CARREGAR DADOS ========
+async function carregarDados() {
+  try {
+    const res = await fetch(`${SCRIPT_URL}?acao=listarReps`);
+    const data = await res.json();
+    REPS = data.reps || [];
+  } catch(e) {
+    // MODO DEMO — dados fictícios para visualização
+    REPS = [
+      { id:'REP_001', nome:'Marcos Veiga', whatsapp:'27999990001', email:'marcos@veiga.com', ramo:'Calçados e Vestuário', plano:'trial', expiracao:'2026-07-01', status:'ativo', marcas:3, produtos:45 },
+      { id:'REP_002', nome:'Ana Paula Costa', whatsapp:'27999990002', email:'ana@costasales.com', ramo:'Alimentício', plano:'basico', expiracao:'2026-07-15', status:'ativo', marcas:4, produtos:88 },
+      { id:'REP_003', nome:'Roberto Alves', whatsapp:'27999990003', email:'roberto@alves.com', ramo:'Limpeza e Descartáveis', plano:'free', expiracao:null, status:'ativo', marcas:1, produtos:7 },
+      { id:'REP_004', nome:'Fernanda Lima', whatsapp:'27999990004', email:'fernanda@lima.com', ramo:'Cosméticos e Higiene', plano:'premium', expiracao:'2026-08-10', status:'ativo', marcas:8, produtos:210 },
+      { id:'REP_005', nome:'Carlos Mendes', whatsapp:'27999990005', email:'carlos@mendes.com', ramo:'Utilidades Domésticas', plano:'trial', expiracao:'2026-06-25', status:'expira', marcas:2, produtos:30 },
+    ];
+  }
+  renderStats();
+  renderReps(REPS);
+  renderDestList(REPS);
+  renderFinanceiro(REPS);
+  renderTemplates();
+  atualizarTopbar();
+}
+
+// ======== STATS ========
+function renderStats() {
+  const total = REPS.length;
+  const ativos = REPS.filter(r => r.plano === 'basico' || r.plano === 'premium').length;
+  const trial = REPS.filter(r => r.plano === 'trial').length;
+  const mrr = REPS.reduce((s,r) => {
+    if (r.plano === 'basico') return s + 39.90;
+    if (r.plano === 'premium') return s + 99.90;
+    return s;
+  }, 0);
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-ativos').textContent = ativos;
+  document.getElementById('stat-trial').textContent = trial;
+  document.getElementById('stat-mrr').textContent = `R$${mrr.toFixed(0)}`;
+  document.getElementById('fin-mrr').textContent = `R$${mrr.toFixed(2).replace('.',',')}`;
+  document.getElementById('fin-ativos').textContent = ativos;
+  document.getElementById('fin-trial').textContent = trial;
+  document.querySelector('.topbar-right div').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'});
+}
+
+// ======== RENDER REPS ========
+function badgePlano(p) {
+  const map = { trial:'badge-trial', free:'badge-free', basico:'badge-basico', premium:'badge-premium', personalizado:'badge-premium' };
+  const label = { trial:'Trial', free:'Free', basico:'Básico', premium:'Premium', personalizado:'Personaliz.' };
+  return `<span class="badge ${map[p]||'badge-free'}">${label[p]||p}</span>`;
+}
+
+function badgeStatus(r) {
+  if (r.status === 'expira') return `<span class="badge badge-expira">Expirando</span>`;
+  if (r.status === 'inativo') return `<span class="badge badge-inativo">Inativo</span>`;
+  return `<span class="badge badge-ativo">Ativo</span>`;
+}
+
+function renderReps(lista) {
+  const tbody = document.getElementById('tbody-reps');
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">👥</div><p>Nenhum representante encontrado.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = lista.map(r => `
+    <tr>
+      <td><div style="font-weight:500">${r.nome}</div><div style="font-size:11px;color:var(--text2)">${r.email}</div></td>
+      <td><a href="https://wa.me/55${r.whatsapp}" target="_blank" style="color:var(--text2);text-decoration:none;font-size:13px">${formatWa(r.whatsapp)}</a></td>
+      <td style="color:var(--text2);font-size:12px">${r.ramo}</td>
+      <td>${badgePlano(r.plano)}</td>
+      <td style="font-size:12px;color:var(--text2)">${r.expiracao ? new Date(r.expiracao).toLocaleDateString('pt-BR') : '—'}</td>
+      <td>${badgeStatus(r)}</td>
+      <td>
+        <div class="actions">
+          <button class="act-btn" title="Alterar plano" onclick="abrirModalPlano('${r.id}')">⚙</button>
+          <button class="act-btn" title="Enviar WhatsApp" onclick="abrirModalWA('${r.id}')">💬</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filtrarReps() {
+  const q = document.getElementById('search-rep').value.toLowerCase();
+  renderReps(REPS.filter(r => r.nome.toLowerCase().includes(q) || r.whatsapp.includes(q) || r.email.toLowerCase().includes(q)));
+}
+
+function formatWa(n) {
+  const d = n.replace(/\D/g,'');
+  if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  return n;
+}
+
+// ======== DEST LIST ========
+function renderDestList(lista) {
+  const el = document.getElementById('dest-list');
+  el.innerHTML = lista.map(r => `
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;display:flex;justify-content:space-between;align-items:center" onclick="selecionarDest('${r.id}')" id="dest-${r.id}">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--text)">${r.nome}</div>
+        <div style="font-size:11px;color:var(--text2)">${formatWa(r.whatsapp)}</div>
+      </div>
+      ${badgePlano(r.plano)}
+    </div>
+  `).join('');
+}
+
+function filtrarDest() {
+  const q = document.getElementById('search-dest').value.toLowerCase();
+  renderDestList(REPS.filter(r => r.nome.toLowerCase().includes(q) || r.whatsapp.includes(q)));
+}
+
+let destSelecionado = null;
+function selecionarDest(id) {
+  destSelecionado = REPS.find(r => r.id === id);
+  document.querySelectorAll('[id^="dest-"]').forEach(el => el.style.background = '');
+  const el = document.getElementById(`dest-${id}`);
+  if (el) el.style.background = 'rgba(196,151,74,0.06)';
+}
+
+// ======== TEMPLATES ========
+function renderTemplates() {
+  const el = document.getElementById('template-list');
+  el.innerHTML = TEMPLATES.map((t,i) => `
+    <div class="template-item" onclick="usarTemplate(${i})">
+      <div class="template-tag">${t.tag}</div>
+      <div class="template-preview">${t.preview}</div>
+    </div>
+  `).join('');
+}
+
+function usarTemplate(i) {
+  if (!destSelecionado) {
+    alert('Selecione um representante primeiro.');
+    return;
+  }
+  const t = TEMPLATES[i];
+  const msg = t.msg(destSelecionado);
+  abrirWAComMsg(destSelecionado, msg, t.tag);
+}
+
+// ======== FINANCEIRO ========
+function renderFinanceiro(lista) {
+  const tbody = document.getElementById('tbody-fin');
+  const PRECOS = { free: 0, trial: 0, basico: 39.90, premium: 99.90, personalizado: 0 };
+  const LABELS = { free:'Free', trial:'Trial', basico:'Básico', premium:'Premium', personalizado:'Personalizado' };
+  tbody.innerHTML = lista.map(r => `
+    <tr>
+      <td><div style="font-weight:500">${r.nome}</div></td>
+      <td>${badgePlano(r.plano)}</td>
+      <td style="font-family:monospace;color:${PRECOS[r.plano]>0?'var(--green)':'var(--text2)'}">${PRECOS[r.plano]>0?`R$${PRECOS[r.plano].toFixed(2).replace('.',',')}`:r.plano==='trial'?'Grátis':'—'}</td>
+      <td style="font-size:12px;color:var(--text2)">${r.expiracao ? new Date(r.expiracao).toLocaleDateString('pt-BR') : '—'}</td>
+      <td>${r.plano==='basico'||r.plano==='premium' ? '<span class="badge badge-ativo">Pago</span>' : r.plano==='trial' ? '<span class="badge badge-trial">Trial</span>' : '<span class="badge badge-free">Sem plano</span>'}</td>
+      <td>
+        <div class="actions">
+          <button class="act-btn" title="Alterar plano" onclick="abrirModalPlano('${r.id}')">⚙</button>
+          <button class="act-btn" title="Enviar cobrança" onclick="abrirModalWA('${r.id}')">💬</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ======== MODAIS ========
+function abrirModalPlano(id) {
+  repAtual = REPS.find(r => r.id === id);
+  document.getElementById('modal-plano-nome').textContent = repAtual.nome;
+  document.getElementById('select-plano').value = repAtual.plano;
+  if (repAtual.expiracao) document.getElementById('input-validade').value = repAtual.expiracao;
+  document.getElementById('modal-plano').classList.add('open');
+}
+
+function abrirModalWA(id) {
+  const r = REPS.find(rep => rep.id === id);
+  abrirWAComMsg(r, TEMPLATES[0].msg(r), 'Mensagem para ' + r.nome);
+}
+
+function abrirWAComMsg(r, msg, titulo) {
+  document.getElementById('modal-wa-title').textContent = titulo;
+  document.getElementById('modal-wa-sub').textContent = formatWa(r.whatsapp);
+  document.getElementById('modal-wa-msg').value = msg;
+  const num = '55' + r.whatsapp.replace(/\D/g,'');
+  document.getElementById('modal-wa-link').href = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+  document.getElementById('modal-wa-msg').oninput = function() {
+    document.getElementById('modal-wa-link').href = `https://wa.me/${num}?text=${encodeURIComponent(this.value)}`;
+  };
+  document.getElementById('modal-wa').classList.add('open');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+async function salvarPlano() {
+  const plano = document.getElementById('select-plano').value;
+  const validade = document.getElementById('input-validade').value;
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ acao: 'alterarPlano', id: repAtual.id, plano, expiracao: validade }),
+    });
+  } catch(e) {}
+  repAtual.plano = plano;
+  repAtual.expiracao = validade;
+  closeModal('modal-plano');
+  renderStats();
+  renderReps(REPS);
+  renderFinanceiro(REPS);
+}
+
+// ======== TABS ========
+function showTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-nav').forEach(n => n.classList.remove('active'));
+  document.getElementById(`panel-${id}`).classList.add('active');
+  const idx = {'representantes':0,'comunicacao':1,'financeiro':2};
+  document.querySelectorAll('.sb-nav')[idx[id]]?.classList.add('active');
+  const titles = { representantes:['Representantes','Gerencie planos, acessos e comunicação'], comunicacao:['Comunicação','Envie mensagens e ofertas diretamente'], financeiro:['Financeiro','Receita, planos e situação de pagamento'] };
+  document.getElementById('topbar-title').textContent = titles[id][0];
+  document.getElementById('topbar-sub').textContent = titles[id][1];
+}
+
+function atualizarTopbar() {
+  document.querySelector('.topbar-right div').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+}
+
+// Fechar modal ao clicar fora
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
