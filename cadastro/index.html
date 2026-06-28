@@ -462,6 +462,8 @@
   <header>
     <div class="brand">EU<sup>⁺</sup></div>
     <div class="brand-sep"></div>
+    <div class="brand-produto" style="color:var(--neg)">Negócio</div>
+    <div class="brand-sep"></div>
     <div class="brand-produto">VENDA⁺</div>
   </header>
 
@@ -522,7 +524,7 @@
 
           <div class="field">
             <label>Ramo de atuação</label>
-            <select id="ramo">
+            <select id="ramo" onchange="toggleRamoOutro(this.value)">
               <option value="" disabled selected>Selecione seu ramo</option>
               <option>Alimentício</option>
               <option>Calçados e Vestuário</option>
@@ -533,8 +535,12 @@
               <option>Móveis e Decoração</option>
               <option>Papelaria e Escritório</option>
               <option>Utilidades Domésticas</option>
-              <option>Outro</option>
+              <option value="Outro">Outro</option>
             </select>
+          </div>
+          <div class="field" id="field-ramo-outro" style="display:none;margin-top:-12px">
+            <label>Qual é o seu ramo?</label>
+            <input type="text" id="ramo-outro" placeholder="Descreva seu ramo de atuação"/>
           </div>
 
           <div class="divider"></div>
@@ -567,9 +573,9 @@
     <div class="footer-hier">
       <a href="https://www.eumaisempresa.com.br">Grupo EU⁺</a>
       <span class="footer-sep">›</span>
-      <a href="#">EU⁺ Empresa</a>
+      <a href="https://eumaisempresa.com.br/plataformas/empresa">EU⁺ Empresa</a>
       <span class="footer-sep">›</span>
-      <a href="#">EU⁺ Negócio</a>
+      <a href="https://eumaisempresa.com.br/plataformas/negocio">EU⁺ Negócio</a>
       <span class="footer-sep">›</span>
       <span style="color:var(--gold)">VENDA⁺</span>
     </div>
@@ -579,7 +585,14 @@
 
 <script>
   // ======== CONFIG ========
-  const SCRIPT_URL = 'SUA_URL_DO_APPS_SCRIPT_AQUI';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFhi94TohnnXXJFm4gkX7X-t15XdE2cwgK4Ca57QeIRtAihreDfD26Oak0ATiWkqbcIQ/exec';
+
+  // ======== RAMO OUTRO ========
+  function toggleRamoOutro(val) {
+    const field = document.getElementById('field-ramo-outro');
+    field.style.display = val === 'Outro' ? 'block' : 'none';
+    if (val !== 'Outro') document.getElementById('ramo-outro').value = '';
+  }
 
   // ======== MÁSCARA WHATSAPP ========
   document.getElementById('whatsapp').addEventListener('input', function(e) {
@@ -596,12 +609,21 @@
     const nome = document.getElementById('nome').value.trim();
     const whatsapp = document.getElementById('whatsapp').value.trim();
     const email = document.getElementById('email').value.trim();
-    const ramo = document.getElementById('ramo').value;
+    const ramoSel = document.getElementById('ramo').value;
+    const ramoOutro = document.getElementById('ramo-outro').value.trim();
+    const ramo = ramoSel === 'Outro' ? ramoOutro : ramoSel;
     if (!nome) return 'Informe seu nome completo.';
     if (whatsapp.replace(/\D/g,'').length < 10) return 'Informe um WhatsApp válido.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Informe um e-mail válido.';
-    if (!ramo) return 'Selecione seu ramo de atuação.';
+    if (!ramoSel) return 'Selecione seu ramo de atuação.';
+    if (ramoSel === 'Outro' && !ramoOutro) return 'Descreva seu ramo de atuação.';
     return null;
+  }
+
+  function getRamoValor() {
+    const ramoSel = document.getElementById('ramo').value;
+    const ramoOutro = document.getElementById('ramo-outro').value.trim();
+    return ramoSel === 'Outro' ? ramoOutro : ramoSel;
   }
 
   function showError(msg) {
@@ -629,7 +651,7 @@
       nome: document.getElementById('nome').value.trim(),
       whatsapp: document.getElementById('whatsapp').value.trim(),
       email: document.getElementById('email').value.trim(),
-      ramo: document.getElementById('ramo').value,
+      ramo: getRamoValor(),
     };
 
     try {
