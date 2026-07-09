@@ -272,15 +272,11 @@
       <div class="acesso">Acesso Gestor</div>
     </div>
     <div class="field">
-      <label>Usuário</label>
-      <input type="text" id="login-user" placeholder="gestor" autocomplete="username"/>
-    </div>
-    <div class="field">
-      <label>Senha</label>
+      <label>Senha de Acesso</label>
       <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/>
     </div>
     <button class="btn-login" onclick="login()">Entrar</button>
-    <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
+    <div class="login-error" id="login-error">Senha incorreta.</div>
   </div>
 </div>
 
@@ -488,8 +484,7 @@
 <script>
 // ======== CONFIG ========
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFhi94TohnnXXJFm4gkX7X-t15XdE2cwgK4Ca57QeIRtAihreDfD26Oak0ATiWkqbcIQ/exec';
-const GESTOR_USER = 'gestor';
-const GESTOR_PASS = 'vendamais2026'; // TROCAR APÓS DEPLOY
+let GESTOR_PASS_LOCAL = ''; // preenchido no login, nunca hardcoded
 
 // ======== DADOS EM MEMÓRIA ========
 let REPS = [];
@@ -531,14 +526,31 @@ const TEMPLATES = [
 
 // ======== LOGIN ========
 function login() {
-  const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value.trim();
-  if (u === GESTOR_USER && p === GESTOR_PASS) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    carregarDados();
-  } else {
-    document.getElementById('login-error').style.display = 'block';
+  document.getElementById('login-error').style.display = 'none';
+  try {
+    const res  = await fetch(`${SCRIPT_URL}?acao=listarReps&gestor_pass=${encodeURIComponent(p)}`);
+    const data = await res.json();
+    if (data.reps) {
+      GESTOR_PASS_LOCAL = p;
+      REPS = data.reps;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      renderStats(); renderReps(REPS); renderDestList(REPS);
+      renderFinanceiro(REPS); renderTemplates(); atualizarTopbar();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  } catch(e) {
+    // DEMO MODE
+    if (p) {
+      GESTOR_PASS_LOCAL = p;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      carregarDados();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
   }
 }
 
@@ -551,7 +563,7 @@ function logout() {
 // ======== CARREGAR DADOS ========
 async function carregarDados() {
   try {
-    const res = await fetch(`${SCRIPT_URL}?acao=listarReps`);
+    const res = await fetch(`${SCRIPT_URL}?acao=listarReps&gestor_pass=${encodeURIComponent(GESTOR_PASS_LOCAL)}`);
     const data = await res.json();
     REPS = data.reps || [];
   } catch(e) {
@@ -745,7 +757,7 @@ async function salvarPlano() {
   try {
     await fetch(SCRIPT_URL, {
       method: 'POST',
-      body: JSON.stringify({ acao: 'alterarPlano', id: repAtual.id, plano, expiracao: validade }),
+      body: JSON.stringify({ acao: 'alterarPlano', id: repAtual.id, plano, expiracao: validade, gestor_pass: GESTOR_PASS_LOCAL }),
     });
   } catch(e) {}
   repAtual.plano = plano;
