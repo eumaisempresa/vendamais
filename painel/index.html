@@ -41,6 +41,14 @@
   .btn-login { width:100%; padding:13px; background:linear-gradient(135deg,var(--gold),var(--neg)); border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; color:var(--bg); cursor:pointer; margin-top:8px; transition:opacity 0.2s; }
   .btn-login:hover { opacity:0.88; }
   .login-error { font-size:12px; color:var(--red); text-align:center; margin-top:12px; display:none; }
+  .login-success { font-size:12px; color:var(--green); text-align:center; margin-top:12px; display:none; }
+  .link-btn { background:none; border:none; color:var(--text2); font-size:12px; cursor:pointer; font-family:'DM Sans',sans-serif; text-decoration:underline; padding:0; transition:color 0.2s; }
+  .link-btn:hover { color:var(--gold); }
+  .img-preview { width:100%; height:120px; border:1px dashed var(--border2); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; transition:border-color 0.2s; background:var(--bg3); overflow:hidden; }
+  .img-preview:hover { border-color:var(--gold); }
+  .img-preview img { width:100%; height:100%; object-fit:cover; border-radius:8px; }
+  .img-preview-label { font-size:11px; color:var(--text2); letter-spacing:1px; }
+  .img-loading { font-size:11px; color:var(--text2); margin-top:6px; display:none; text-align:center; }
 
   /* APP */
   #app { display:none; }
@@ -184,16 +192,40 @@
       <div class="produto">VENDA⁺</div>
       <div class="sub">Área do Representante</div>
     </div>
-    <div class="field">
-      <label>Usuário</label>
-      <input type="text" id="login-user" placeholder="seu usuário" autocomplete="username"/>
+    <!-- TELA LOGIN -->
+    <div id="tela-login">
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/>
+      </div>
+      <button class="btn-login" onclick="login()">Entrar</button>
+      <div style="text-align:center;margin-top:14px">
+        <button class="link-btn" onclick="mostrarRecuperar()">Esqueci minha senha</button>
+      </div>
+      <div class="login-error" id="login-error">E-mail ou senha incorretos.</div>
     </div>
-    <div class="field">
-      <label>Senha</label>
-      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/>
+
+    <!-- TELA RECUPERAR SENHA -->
+    <div id="tela-recuperar" style="display:none">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6">
+        Informe seu e-mail cadastrado. Enviaremos uma nova senha.
+      </div>
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="rec-email" placeholder="seu@email.com"/>
+      </div>
+      <button class="btn-login" onclick="recuperarSenha()">Enviar nova senha</button>
+      <div style="text-align:center;margin-top:14px">
+        <button class="link-btn" onclick="mostrarLogin()">← Voltar para o login</button>
+      </div>
+      <div class="login-error" id="rec-error">E-mail não encontrado.</div>
+      <div class="login-success" id="rec-success">Nova senha enviada para seu e-mail.</div>
     </div>
-    <button class="btn-login" onclick="login()">Entrar</button>
-    <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
+
   </div>
 </div>
 
@@ -253,7 +285,7 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Código</th><th>Descrição</th><th>Marca</th><th>Unid.</th><th>Preço Cx</th><th>Desconto</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Código</th><th>Descrição</th><th>Marca</th><th>Unid.</th><th>Preço Cx</th><th>Desconto</th><th></th></tr></thead>
           <tbody id="tbody-prod"></tbody>
         </table>
       </div>
@@ -366,6 +398,18 @@
         <div class="mfield"><label>Preço Caixa (R$)</label><input type="number" id="prod-preco" placeholder="0,00" step="0.01" min="0"/></div>
       </div>
       <div class="mfield"><label>Política de Desconto (%)</label><input type="number" id="prod-desc-pct" placeholder="0" min="0" max="100"/></div>
+      <div class="mfield">
+        <label>Foto do Produto</label>
+        <input type="hidden" id="prod-img"/>
+        <div class="img-preview" onclick="document.getElementById('prod-img-input').click()">
+          <div id="prod-img-preview-inner">
+            <div style="font-size:28px">📷</div>
+            <div class="img-preview-label">Clique para tirar foto ou importar imagem</div>
+          </div>
+        </div>
+        <input type="file" id="prod-img-input" accept="image/*" capture="environment" style="display:none" onchange="previewImagem(this)"/>
+        <div class="img-loading" id="prod-img-loading">⟳ Enviando imagem...</div>
+      </div>
       <button class="btn-full" onclick="salvarProduto()">Salvar Produto</button>
     </div>
   </div>
@@ -467,21 +511,53 @@ let pedItems = [];
 let editId = null;
 
 // ======== LOGIN ========
+function mostrarLogin() {
+  document.getElementById('tela-login').style.display = 'block';
+  document.getElementById('tela-recuperar').style.display = 'none';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function mostrarRecuperar() {
+  document.getElementById('tela-login').style.display = 'none';
+  document.getElementById('tela-recuperar').style.display = 'block';
+  document.getElementById('rec-error').style.display = 'none';
+  document.getElementById('rec-success').style.display = 'none';
+}
+
 async function login() {
-  const user = document.getElementById('login-user').value.trim();
-  const pass = document.getElementById('login-pass').value.trim();
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value.trim();
+  document.getElementById('login-error').style.display = 'none';
   try {
-    const res = await fetch(`${SCRIPT_URL}?acao=login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`);
+    const res  = await fetch(`${SCRIPT_URL}?acao=login&email=${encodeURIComponent(email)}&pass=${encodeURIComponent(pass)}`);
     const data = await res.json();
     if (data.ok) { iniciarApp(data.rep); }
     else { document.getElementById('login-error').style.display = 'block'; }
   } catch(e) {
     // DEMO MODE
-    if (user && pass) {
-      iniciarApp({ id:'REP_001', nome:'Marcos Veiga', plano:'trial', expiracao:'2026-07-01' });
+    if (email && pass) {
+      iniciarApp({ id:'REP_001', nome:'Marcos Veiga', email, plano:'trial', expiracao:'2026-07-01' });
     } else {
       document.getElementById('login-error').style.display = 'block';
     }
+  }
+}
+
+async function recuperarSenha() {
+  const email = document.getElementById('rec-email').value.trim();
+  document.getElementById('rec-error').style.display = 'none';
+  document.getElementById('rec-success').style.display = 'none';
+  if (!email) { document.getElementById('rec-error').style.display = 'block'; return; }
+  try {
+    const res  = await fetch(`${SCRIPT_URL}?acao=recuperarSenha&email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+    if (data.sucesso) {
+      document.getElementById('rec-success').style.display = 'block';
+    } else {
+      document.getElementById('rec-error').style.display = 'block';
+    }
+  } catch(e) {
+    document.getElementById('rec-success').style.display = 'block'; // Demo
   }
 }
 
@@ -489,6 +565,8 @@ function logout() {
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-pass').value = '';
+  document.getElementById('login-email').value = '';
+  mostrarLogin();
   REP = null; MARCAS=[]; PRODUTOS=[]; CLIENTES=[]; PEDIDOS=[];
 }
 
@@ -624,7 +702,11 @@ function renderProdutos() {
   if (!lista.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><p>Nenhum produto encontrado.</p></div></td></tr>`; return; }
   tbody.innerHTML = lista.map(p => {
     const m = MARCAS.find(x => x.id===p.marca);
+    const thumb = p.img
+      ? `<img src="${p.img}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"/>`
+      : `<div style="width:36px;height:36px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px">📦</div>`;
     return `<tr>
+      <td style="width:44px">${thumb}</td>
       <td style="font-family:monospace;font-size:12px;color:var(--text2)">${p.cod}</td>
       <td style="font-weight:500">${p.desc}</td>
       <td style="font-size:12px;color:var(--neg)">${m?.nome||'—'}</td>
@@ -636,24 +718,88 @@ function renderProdutos() {
   }).join('');
 }
 
-function salvarProduto() {
-  const lim = PLANO_LIMITES[REP?.plano||'free'];
-  const id = document.getElementById('prod-edit-id').value;
-  const nova = {
-    id: id || 'P' + Date.now(),
-    cod: document.getElementById('prod-cod').value.trim(),
-    desc: document.getElementById('prod-desc').value.trim(),
-    marca: document.getElementById('prod-marca').value,
-    unid: document.getElementById('prod-unid').value,
-    preco: parseFloat(document.getElementById('prod-preco').value)||0,
-    desconto: parseFloat(document.getElementById('prod-desc-pct').value)||0,
+// ======== IMAGEM PRODUTO ========
+function previewImagem(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const inner = document.getElementById('prod-img-preview-inner');
+    inner.innerHTML = `<img src="${e.target.result}" style="width:100%;height:120px;object-fit:cover;border-radius:8px"/>`;
+    // Armazena base64 temporariamente para envio
+    window._imgBase64   = e.target.result.split(',')[1];
+    window._imgMime     = file.type;
+    window._imgFileName = file.name;
   };
+  reader.readAsDataURL(file);
+}
+
+async function uploadImagemProduto(prodId) {
+  if (!window._imgBase64) return null;
+  document.getElementById('prod-img-loading').style.display = 'block';
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        acao: 'uploadImagem',
+        repId: REP.id,
+        prodId,
+        base64:   window._imgBase64,
+        mimeType: window._imgMime,
+        fileName: window._imgFileName,
+      })
+    });
+    const data = await res.json();
+    document.getElementById('prod-img-loading').style.display = 'none';
+    if (data.sucesso) return data.url;
+  } catch(e) {
+    document.getElementById('prod-img-loading').style.display = 'none';
+  }
+  return null;
+}
+
+function resetImagemProduto() {
+  window._imgBase64 = null;
+  window._imgMime   = null;
+  window._imgFileName = null;
+  document.getElementById('prod-img-preview-inner').innerHTML = `
+    <div style="font-size:28px">📷</div>
+    <div class="img-preview-label">Clique para tirar foto ou importar imagem</div>
+  `;
+  document.getElementById('prod-img').value = '';
+  document.getElementById('prod-img-input').value = '';
+}
+
+async function salvarProduto() {
+  const lim = PLANO_LIMITES[REP?.plano||'free'];
+  const id  = document.getElementById('prod-edit-id').value;
+  const prodId = id || 'P' + Date.now();
+
+  const nova = {
+    id:       prodId,
+    cod:      document.getElementById('prod-cod').value.trim(),
+    desc:     document.getElementById('prod-desc').value.trim(),
+    marca:    document.getElementById('prod-marca').value,
+    unid:     document.getElementById('prod-unid').value,
+    preco:    parseFloat(document.getElementById('prod-preco').value)||0,
+    desconto: parseFloat(document.getElementById('prod-desc-pct').value)||0,
+    img:      document.getElementById('prod-img').value || '',
+  };
+
   if (!nova.cod||!nova.desc||!nova.marca) { alert('Preencha código, descrição e marca.'); return; }
   if (!id && PRODUTOS.length >= lim.produtos) { alert(`Limite de ${lim.produtos} produto(s) atingido para o plano ${REP.plano}. Faça upgrade para continuar.`); return; }
+
+  // Upload de imagem se houver nova imagem selecionada
+  if (window._imgBase64) {
+    const url = await uploadImagemProduto(prodId);
+    if (url) nova.img = url;
+  }
+
   if (id) { const i = PRODUTOS.findIndex(p => p.id===id); PRODUTOS[i] = nova; }
   else PRODUTOS.push(nova);
   salvarRemoto('produtos', PRODUTOS);
   closeModal('modal-produto');
+  resetImagemProduto();
   renderProdutos();
 }
 
@@ -661,12 +807,21 @@ function editarProduto(id) {
   const p = PRODUTOS.find(x=>x.id===id);
   document.getElementById('modal-prod-title').textContent = 'Editar Produto';
   document.getElementById('prod-edit-id').value = p.id;
-  document.getElementById('prod-cod').value = p.cod;
+  document.getElementById('prod-cod').value  = p.cod;
   document.getElementById('prod-desc').value = p.desc;
   document.getElementById('prod-marca').value = p.marca;
-  document.getElementById('prod-unid').value = p.unid;
+  document.getElementById('prod-unid').value  = p.unid;
   document.getElementById('prod-preco').value = p.preco;
   document.getElementById('prod-desc-pct').value = p.desconto;
+  document.getElementById('prod-img').value = p.img || '';
+  // Preview da imagem existente
+  const inner = document.getElementById('prod-img-preview-inner');
+  if (p.img) {
+    inner.innerHTML = `<img src="${p.img}" style="width:100%;height:120px;object-fit:cover;border-radius:8px"/>`;
+  } else {
+    inner.innerHTML = `<div style="font-size:28px">📷</div><div class="img-preview-label">Clique para tirar foto ou importar imagem</div>`;
+  }
+  window._imgBase64 = null;
   abrirModal('modal-produto');
 }
 
