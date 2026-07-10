@@ -471,12 +471,12 @@
     <div class="container">
 
       <div class="hero">
-        <div class="hero-eyebrow">Gestão de Pedidos</div>
+        <div class="hero-eyebrow">Gestão de Pré-Pedidos</div>
         <h1>Suas marcas, seus clientes,<br><em>tudo no celular.</em></h1>
-        <p>Cadastre-se e comece a gerenciar pedidos<br>sem papel, sem planilha, sem complicação.</p>
+        <p>Cadastre-se e comece a gerenciar pré-pedidos<br>sem papel, sem planilha, sem complicação.</p>
         <div class="trial-badge">
           <div class="trial-dot"></div>
-          <span class="trial-text">Experimente 3 dias Premium grátis — sem cartão</span>
+          <span class="trial-text">7 dias Premium grátis — sem cartão</span>
         </div>
       </div>
 
@@ -488,7 +488,7 @@
           <div class="plano-info">
             <div class="plano-header">
               <span class="plano-nome">Trial Premium</span>
-              <span class="plano-dias">3 dias grátis</span>
+              <span class="plano-dias">7 dias grátis</span>
             </div>
             <div class="plano-items">
               <div class="plano-item">
@@ -551,14 +551,14 @@
 
           <div class="termos">
             Ao se cadastrar você concorda com os termos de uso.<br>
-            Após 3 dias, seu acesso passa automaticamente para o plano Free.
+            Após 7 dias, seu acesso passa automaticamente para o plano Free.
           </div>
         </div>
 
         <div class="success" id="success-area">
           <div class="success-icon">✓</div>
           <h2>Cadastro realizado.</h2>
-          <p>Suas credenciais de acesso foram enviadas<br>por WhatsApp e e-mail.</p>
+          <p>Suas credenciais foram enviadas por e-mail.<br>Guarde sua senha em local seguro.</p>
           <div class="credenciais" id="credenciais-box"></div>
           <a href="https://eumaisempresa.github.io/vendamais/painel/" style="text-decoration:none">
             <button class="btn" style="margin-top:4px">Acessar meu painel →</button>
@@ -665,10 +665,12 @@
         document.getElementById('form-area').style.display = 'none';
         const s = document.getElementById('success-area');
         s.style.display = 'block';
+        const emailUsado = document.getElementById('email').value.trim();
         document.getElementById('credenciais-box').innerHTML = `
-          <div class="cred-row"><span class="cred-label">Usuário</span><span class="cred-val">${data.usuario}</span></div>
-          <div class="cred-row"><span class="cred-label">Senha</span><span class="cred-val">${data.senha}</span></div>
+          <div class="cred-row"><span class="cred-label">Usuário (e-mail)</span><span class="cred-val">${emailUsado}</span></div>
+          <div class="cred-row"><span class="cred-label">Senha</span><span class="cred-val" style="font-size:18px;letter-spacing:2px">${data.senha || '••••••••'}</span></div>
           <div class="cred-row"><span class="cred-label">Plano</span><span class="cred-val">Premium — Trial 7 dias</span></div>
+          <div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.6">Sua senha também foi enviada para <strong style="color:var(--text)">${emailUsado}</strong></div>
         `;
       } else {
         showError(data.erro || 'Erro ao criar conta. Tente novamente.');
